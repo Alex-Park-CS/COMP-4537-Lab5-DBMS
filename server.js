@@ -9,7 +9,10 @@ const db = mysql.createConnection({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT || 25060,  // Use DigitalOcean’s MySQL port
+    ssl: { rejectUnauthorized: false }   // Enables SSL for DigitalOcean
 });
+
 
 // Connect to the database
 db.connect(err => {
@@ -86,6 +89,7 @@ const server = http.createServer((req, res) => {
     }
 });
 
-server.listen(3000, () => {
-    console.log('Server is listening on port 3000');
+const PORT = process.env.PORT || 3000;  // DigitalOcean assigns a port dynamically
+server.listen(PORT, () => {
+    console.log(`✅ Server is running on port ${PORT}`);
 });
