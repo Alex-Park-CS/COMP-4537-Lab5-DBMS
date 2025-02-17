@@ -1,13 +1,14 @@
 const http = require('http');
 const url = require('url');
 const mysql = require('mysql2');
+require('dotenv').config(); // Load .env variables
 
 // Create a connection to the database
 const db = mysql.createConnection({
-    host: 'localhost',  // Change if using a remote database
-    user: 'alexp93',       // Your MySQL username
-    password: 'asdf1234',  // Your MySQL password
-    database: 'lab5_db'  // Your database name
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
 });
 
 // Connect to the database
