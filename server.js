@@ -16,6 +16,11 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+console.log("DB_USER from process.env:", process.env.DB_USER);
+console.log("DB_HOST from process.env:", process.env.DB_HOST);
+console.log("DB_PASSWORD from process.env:", process.env.DB_PASSWORD);
+
+
 // Initialize the table if it doesn't exist
 pool.query(`
     CREATE TABLE IF NOT EXISTS patients (
