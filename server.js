@@ -20,21 +20,24 @@ console.log("DB_USER from process.env:", process.env.DB_USER);
 console.log("DB_HOST from process.env:", process.env.DB_HOST);
 console.log("DB_PASSWORD from process.env:", process.env.DB_PASSWORD);
 
+function initializeTable() {
+    pool.query(`
+        CREATE TABLE IF NOT EXISTS patients (
+            patientid INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            dateOfBirth DATETIME NOT NULL
+        ) ENGINE=InnoDB;
+    `, (err, result) => {
+        if (err) {
+            console.error("Error creating table:", err.message);
+        } else {
+            console.log("Table 'patients' is ready.");
+        }
+    });
+}
 
-// Initialize the table if it doesn't exist
-pool.query(`
-    CREATE TABLE IF NOT EXISTS patients (
-        patientid INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        dateOfBirth DATETIME NOT NULL
-    ) ENGINE=InnoDB;
-`, (err, result) => {
-    if (err) {
-        console.error("Error creating table:", err.message);
-    } else {
-        console.log("Table 'patients' is ready.");
-    }
-});
+initializeTable();
+
 
 const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); 
@@ -47,15 +50,28 @@ const server = http.createServer((req, res) => {
     console.log(decodedQuery);
 
     if (req.method === 'GET' || req.method === 'POST') {
-        pool.query(decodedQuery, (err, result) => {
+        // Check if the table exists before executing the query
+        pool.query("SHOW TABLES LIKE 'patients'", (err, result) => {
             if (err) {
-                console.error("Database insert failed:", err.message);
+                console.error("Error checking table existence:", err.message);
                 res.writeHead(500);
                 return res.end(JSON.stringify({ error: err.message }));
             }
-            console.log(result);
-            res.writeHead(200);
-            res.end(JSON.stringify(result));
+            if (result.length === 0) {
+                // Table does not exist, recreate it
+                initializeTable();
+            }
+            // Execute the query
+            pool.query(decodedQuery, (err, result) => {
+                if (err) {
+                    console.error("Database query failed:", err.message);
+                    res.writeHead(500);
+                    return res.end(JSON.stringify({ error: err.message }));
+                }
+                console.log(result);
+                res.writeHead(200);
+                res.end(JSON.stringify(result));
+            });
         });
     } else {
         res.writeHead(405);
