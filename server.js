@@ -41,31 +41,7 @@ const server = http.createServer((req, res) => {
     let decodedQuery = decodeURIComponent(sqlQuery);
     console.log(decodedQuery);
 
-    if (req.method === 'GET') {
-        if (!decodedQuery.toLowerCase().startsWith("select")) {
-            console.log("Only SELECT queries are allowed");
-            res.writeHead(400);
-            return res.end(JSON.stringify({ error: "Only SELECT queries are allowed" }));
-        }
-
-        // Use pool.query() to ensure connection remains open
-        pool.query(decodedQuery, (err, result) => {
-            if (err) {
-                console.error("Database query failed:", err.message);
-                res.writeHead(500);
-                return res.end(JSON.stringify({ error: err.message }));
-            }
-            console.log(result);
-            res.writeHead(200);
-            res.end(JSON.stringify(result));
-        });
-    } else if (req.method === 'POST') {
-        if (!decodedQuery.toLowerCase().startsWith("insert")) {
-            console.log("Only INSERT queries are allowed");
-            res.writeHead(400);
-            return res.end(JSON.stringify({ error: "Only INSERT queries are allowed" }));
-        }
-
+    if (req.method === 'GET' || req.method === 'POST') {
         pool.query(decodedQuery, (err, result) => {
             if (err) {
                 console.error("Database insert failed:", err.message);
